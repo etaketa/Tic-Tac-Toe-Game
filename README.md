@@ -12,5 +12,6 @@ Two clients will connect to a server that conducts a game of Tic Tac Toe using P
 * Sockets
 
 **Additional resources:**
-* [Link to Python documentation]
-* [Link to sockets tutorial]
+* [Socket Programming in Python](https://realpython.com/python-sockets/)
+* Homework 1 - Intro to TCP Sockets
+* Homework 2 - Multiple TCP Connections
