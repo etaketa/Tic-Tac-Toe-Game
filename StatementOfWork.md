@@ -24,17 +24,42 @@ To make the most fun online tic tac toe game. We aim to do this by using TCP com
 - startClient.sh
 
 # Timeline: 
-## Sprint 0 - Setup
+## Sprint 0 - Setup (Complete by 09/22/24)
+- Create the project Github
+- Decide on the game
+- Create README and SOW
 
-## Sprint 1 - Implement TCP Server/Client
+## Sprint 1 - Implement TCP Server/Client (09/22/24 - 10/06/24)
+- Set up server side applications
+- Set up client side connection
+- Establish basic communication between the server and client
+- Handle common errors for network related issues
+- Test the abilities of the server and client and debug if needed
+- Update the README file
 
-## Sprint 2 - Design and Implement Message Protocol
+## Sprint 2 - Design and Implement Message Protocol (10/06/24 - 10/20/24)
+- Define the format of the messages in the exchange
+- Handle ways to receive, send, and parse messages with both the server and client
+- Handle how the server will deal with client connections and disconnections
 
-## Spring 3 - Multiplayer functionality (Synchronizing state accross clients)
+## Sprint 3 - Multiplayer functionality: Synchronizing state accross clients (10/20/24 - 11/03/24)
+- Synchronize the game state across all connected clients
+- Client side game rendering
+- Decide and implement how the players will take turns playing the game
+- Implement player identification
+- Optional: having chat functionality so players can talk to each other
 
-## Sprint 4 - Gameplay
+## Sprint 4 - Gameplay (11/03/24 - 11/17/24)
+- Update game state management
+- Handle user input
+- Define winning conditions and implement a notification to players when a winner is determined
+- Determine and implement what happens after the game is finished
+- Develop a user-friendly UI
 
-## Sprint 5 - Error Handling and Testing 
+## Sprint 5 - Error Handling and Testing (11/17/24 - 12/06/24)
+- Handle unexpected errors
+- Integration testings
+- Security and risk evaluation
 
 # Technical Requirements: 
 ## Hardware
@@ -55,10 +80,10 @@ To make the most fun online tic tac toe game. We aim to do this by using TCP com
 
 ## Erin
 - Develop and test code
-- 
+  
 ## Joe
 - Develop and test code
-- 
+
 # Communication Plan:
 - Communicate via SMS and Teams
 
