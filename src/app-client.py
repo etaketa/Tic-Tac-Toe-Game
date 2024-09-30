@@ -21,7 +21,7 @@ clientIsPlaying = True
 i = 0
 
 try:
-    while clientIsPlaying:
+    while clientIsPlaying:  # while the client is connected to the server
         i += 1
 except KeyboardInterrupt:
     print("Exiting")

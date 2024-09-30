@@ -19,7 +19,7 @@ serverSocket.setblocking(False)
 
 i = 0
 try:
-    while serverIsRunning:
+    while serverIsRunning:  # while the server is running
         i += 1
 except KeyboardInterrupt:
     print("Exiting")
