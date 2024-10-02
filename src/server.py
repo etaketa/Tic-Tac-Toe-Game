@@ -5,12 +5,16 @@ import traceback
 
 sel = selectors.DefaultSelector()
 
-if len(sys.argv) != 3:
-    print(f"usage ={sys.argv[0]} <portNumber>")
-    sys.exit(1)
+# if len(sys.argv) != 3:
+#     print(f"usage ={sys.argv[0]} <portNumber>")
+#     sys.exit(1)
 
-host = sys.argv[1]
-portNumber = int(sys.argv[2])
+
+# Instead of specifying the host we could just have the host be whichever machine runs the server code
+#host = sys.argv[1]
+host = socket.gethostname()
+#portNumber = int(sys.argv[2])
+portNumber = int(sys.argv[1])
 
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -30,6 +34,7 @@ try:
     print(f"Successfully connected to: {str(address)}")
     
     while True:  # while the server is running
+        # We just need to figure out how to distinguish the clients we are recieving data from
         data = client_connection.recv(1024).decode()
 
         print(f"Message from client: {str(data)}")
