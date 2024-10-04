@@ -24,20 +24,20 @@ if len(sys.argv) != 3:
 host, port = sys.argv[1], int(sys.argv[2])
 clientSocket = connect_to_server(host, port)
 clientIsPlaying = True
-print(f"Successfully connected to '{host}'!")
-i = 0
+print(f"Successfully connected to '{socket.gethostbyaddr(host)[1][0]}'!\n")
 
 try:
-    message = input("Write your message: ")
-    clientSocket.send(message.encode())
-    while True:  # while the client is connected to the server
+    while clientIsPlaying:  # while the client is connected to the server
         receiveMessage = clientSocket.recv(1024).decode()
-
-        print(f"Message from client: {str(receiveMessage)}")
-        message = input("Write your message: ")
-        clientSocket.send(message.encode())
+        if receiveMessage == "Waiting for another client...":
+            print(str(receiveMessage))
+            print()
+        else:
+            print(str(receiveMessage))
+            message = input("Write your message: ")
+            clientSocket.send(message.encode())
 except KeyboardInterrupt:
-    print("Exiting")
+    print("Disconnecting from the server")
 finally:
     clientIsPlaying = False
     clientSocket.close()
