@@ -5,15 +5,19 @@ import traceback
 
 sel = selectors.DefaultSelector()
 
-# if len(sys.argv) != 3:
-#     print(f"usage ={sys.argv[0]} <portNumber>")
-#     sys.exit(1)
+def start_connections():
+    events = sel.select(timeout=None)
+    key = events[0]
+    sock = key[0].fileobj
+    client_connection, address = sock.accept()
+    print(f"Successfully connected to: {str(address)}")
+    return client_connection
 
+if len(sys.argv) != 2:
+    print(f"usage = {sys.argv[0]} <portNumber>")
+    sys.exit(1)
 
-# Instead of specifying the host we could just have the host be whichever machine runs the server code
-#host = sys.argv[1]
 host = socket.gethostname()
-#portNumber = int(sys.argv[2])
 portNumber = int(sys.argv[1])
 
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -27,22 +31,27 @@ serverSocket.setblocking(False)
 sel.register(serverSocket, selectors.EVENT_READ, data=None)
 
 try:
-    events = sel.select(timeout=None)
-    key = events[0]
-    sock = key[0].fileobj
-    client_connection, address = sock.accept()
-    print(f"Successfully connected to: {str(address)}")
-    
-    while True:  # while the server is running
-        # We just need to figure out how to distinguish the clients we are recieving data from
-        data = client_connection.recv(1024).decode()
+    client_connection1 = start_connections()
+    message = "Waiting for another client..."
+    client_connection1.send(message.encode())
+    client_connection2 = start_connections()
 
-        print(f"Message from client: {str(data)}")
-        message = input("Write your message: ")
-        client_connection.send(message.encode())
+    message = "Both clients are connected!"
+    client_connection1.send(message.encode())
+
+    while serverIsRunning:  # while the server is running
+
+        client_message1 = client_connection1.recv(1024).decode()
+        message = "Received from client 1: " + str(client_message1)
+        
+        client_connection2.send(message.encode())
+        client_message2 = client_connection2.recv(1024).decode()
+        message = "Received from client 2: " + str(client_message2)
+        client_connection1.send(message.encode())
 
 except KeyboardInterrupt:
+    serverIsRunning = False
     print("Exiting")
 finally:
-    serverIsRunning = False
-    client_connection.close()
+    client_connection1.close()
+    client_connection2.close()
