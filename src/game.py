@@ -7,7 +7,7 @@ class game():
 
 
     def __init__(self, p1=None, p2=None, playersList=None):
-        # Initialize p1 and p2 as they will be playing the game
+        # TODO: Initialize p1 and p2 as they will be playing the game
         self.spaces = [" " for _ in range(9)]
         
         self.gameBoard = (
