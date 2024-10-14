@@ -25,6 +25,9 @@ def create_request(requestType):
         return dict()
     elif requestType == 4:  # Send an invite to another client to the server
         return dict()
+    else:
+        print("Invalid request type")
+        return None
     
 
 def on_request_recieved(request):
@@ -48,7 +51,7 @@ def main():
     host, port = sys.argv[1], int(sys.argv[2])
     clientSocket = connect_to_server(host, port)
     clientIsConnected = True
-    print(f"[Client] successfully connected to Server") #'{socket.gethostbyaddr(host)[1][0]}'!\n")
+    print(f"[{socket.gethostname()}] successfully connected to Server") #'{socket.gethostbyaddr(host)[1][0]}'!\n")
 
     try:
         while clientIsConnected:  # while the client is connected to the server
