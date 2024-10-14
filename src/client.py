@@ -48,7 +48,7 @@ def main():
     host, port = sys.argv[1], int(sys.argv[2])
     clientSocket = connect_to_server(host, port)
     clientIsConnected = True
-    print(f"[{clientSocket.gethostname}] successfully connected to Server @ '{socket.gethostbyaddr(host)[1][0]}'!\n")
+    print(f"[Client] successfully connected to Server") #'{socket.gethostbyaddr(host)[1][0]}'!\n")
 
     try:
         while clientIsConnected:  # while the client is connected to the server

@@ -32,31 +32,37 @@ def main():
     serverSocket.setblocking(False)
     sel.register(serverSocket, selectors.EVENT_READ, data=None)
 
+    connected_clients = [] # list of all the connected clients
+
     try:
-        client_connection1 = start_connections()
-        message = "Waiting for another client..."
-        client_connection1.send(message.encode())
-        client_connection2 = start_connections()
-
-        message = "Both clients are connected!"
-        client_connection1.send(message.encode())
-
         while serverIsRunning:  # while the server is running
+            connected_clients.append(start_connections())
+        # client_connection1 = start_connections()
+        # message = "Waiting for another client..."
+        # client_connection1.send(message.encode())
+        # client_connection2 = start_connections()
 
-            client_message1 = client_connection1.recv(1024).decode()
-            message = "Received from client 1: " + str(client_message1)
+        # message = "Both clients are connected!"
+        # client_connection1.send(message.encode())
+
+        
+
+            # client_message1 = client_connection1.recv(1024).decode()
+            # message = "Received from client 1: " + str(client_message1)
             
-            client_connection2.send(message.encode())
-            client_message2 = client_connection2.recv(1024).decode()
-            message = "Received from client 2: " + str(client_message2)
-            client_connection1.send(message.encode())
+            # client_connection2.send(message.encode())
+            # client_message2 = client_connection2.recv(1024).decode()
+            # message = "Received from client 2: " + str(client_message2)
+            # client_connection1.send(message.encode())
 
     except KeyboardInterrupt:
         serverIsRunning = False
         print("Exiting")
     finally:
-        client_connection1.close()
-        client_connection2.close()
+        for client in connected_clients:
+            client.close()
+
+        serverSocket.close()
 
 if __name__ == "__main__":
     main()
