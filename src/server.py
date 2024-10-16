@@ -37,6 +37,7 @@ def handle_request(request=None, sock=None):
     response = b"Response from server"  # Example response
     sock.send(response)  # create appropriate response for the user
 
+
 def main():
     if len(sys.argv) != 2:
         print(f"usage = {sys.argv[0]} <portNumber>")
