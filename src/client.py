@@ -2,6 +2,7 @@ import sys
 import socket
 import selectors
 import traceback
+import json
 
 sel = selectors.DefaultSelector()
 
@@ -9,7 +10,7 @@ sel = selectors.DefaultSelector()
 def connect_to_server(hostName, portNumber):
     address = (hostName, portNumber)
     clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #clientSocket.setblocking(False)
+    clientSocket.setblocking(False)
     clientSocket.connect_ex(address)  # connect to the server without blocking the main thread
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
     sel.register(clientSocket, events, data=None)
@@ -17,29 +18,37 @@ def connect_to_server(hostName, portNumber):
 
 
 def create_request(requestType):
-    if requestType == 1:  # Send a register request to the server
-        return dict()
-    elif requestType == 2 or requestType == 5:  # Send a deregister request to the server/Exit the client.
-        return dict()
-    elif requestType == 3:  # Send a request to see all peer nodes in the system
-        return dict()
-    elif requestType == 4:  # Send an invite to another client to the server
-        return dict()
+    if requestType == 1:  # Send a invite request to the server
+        return dict(
+            type="binary/custom-client-binary-type",
+            encoding="binary",
+            content=bytes(1)
+        )
+    elif requestType == 2:
+        # deregister from the server
+        return dict(
+            type="binary/custom-client-binary-type",
+            encoding="binary",
+            content=bytes(2)
+        )
     else:
         print("Invalid request type")
         return None
     
 
-def on_request_recieved(request):
+def handle_response(response, clientSocket):
+    # unpack response
+    # if repsonse is deregister value, close socket
+    # else handle other responses
     pass
 
 
+
 def get_user_input():
-    print("1. Register to the server")
-    print("2. Deregister from the server")
-    print("3. List other players")
-    print("4. Invite a player")
-    print("5. Exit")
+    # print("2. Deregister from the server")
+    # print("3. List other players")
+    print("1. Invite a player") # maybe list all players and ask for the player to invite
+    print("2. Exit")
     user_input = input("Enter a number to select an option: ")
     return user_input
 
@@ -55,10 +64,10 @@ def main():
 
     try:
         while clientIsConnected:  # while the client is connected to the server
-            message = create_request(get_user_input())
-            receiveMessage = clientSocket.recv(1024).decode()
-            clientSocket.send(message.encode())
-            # on recieving a response from the server call the on_request_recieved function
+            # get the user input
+            message = create_request(int(get_user_input()))
+            # clientSocket.send(json.dumps(message).encode()) # find a way to correctly send the message to the server
+            # handle_response(clientSocket.recv(1024), clientSocket)
     except KeyboardInterrupt:
         print("Disconnecting from the server")
     finally:
