@@ -66,7 +66,7 @@ def main():
         while clientIsConnected:  # while the client is connected to the server
             # get the user input
             message = create_request(int(get_user_input()))
-            # clientSocket.send(json.dumps(message).encode())
+            # clientSocket.send(json.dumps(message).encode()) # find a way to correctly send the message to the server
             # handle_response(clientSocket.recv(1024), clientSocket)
     except KeyboardInterrupt:
         print("Disconnecting from the server")
