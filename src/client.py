@@ -2,6 +2,7 @@ import sys
 import socket
 import selectors
 import traceback
+import json
 
 sel = selectors.DefaultSelector()
 
@@ -64,9 +65,9 @@ def main():
     try:
         while clientIsConnected:  # while the client is connected to the server
             # get the user input
-            message = create_request(get_user_input())
-            clientSocket.send(message.encode())
-            handle_response(clientSocket.recv(1024), clientSocket)
+            message = create_request(int(get_user_input()))
+            # clientSocket.send(json.dumps(message).encode())
+            # handle_response(clientSocket.recv(1024), clientSocket)
     except KeyboardInterrupt:
         print("Disconnecting from the server")
     finally:
