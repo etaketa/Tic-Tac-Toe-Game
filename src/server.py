@@ -4,6 +4,7 @@ import selectors
 import traceback
 
 sel = selectors.DefaultSelector()
+list_of_clients = []
 
 def start_connections():
     events = sel.select(timeout=None)
@@ -17,7 +18,8 @@ def accept_wrapper(sock):
     client_connection, address = sock.accept()
     print(f"Successfully connected to: {str(address)}")
     client_connection.setblocking(False)
-    sel.register(client_connection, selectors.EVENT_READ, data=None)
+    sel.register(client_connection, selectors.EVENT_READ, data="hello")
+    list_of_clients.append(client_connection)
 
 def service_connection(key, mask):
     sock = key.fileobj
@@ -29,14 +31,35 @@ def service_connection(key, mask):
             sel.unregister(sock)
             sock.close()
 
+def invite_player():
+    host_names = "Pick a letter from the list of host names:\n"
+    counter = 97
+    for client in list_of_clients:
+        client = str(client)
+        host_names += chr(counter) + ". " + socket.gethostbyaddr(client[110:123])[1][0] + "\n"
+        counter += 1
+    response = host_names[:len(host_names) - 1]
+    return b"%s" % response.encode()
+
 def handle_request(request=None, sock=None):
-    print(request)
+    requestType = int.from_bytes(request, "big")
+    if requestType == 1:
+        response = invite_player()
+        print("Sending response to client...")
+        sock.send(response)
+    elif requestType == 2:
+        print("Disconnecting client from server...")
+        response = b"Exit"
+        sock.send(response)
+        sel.unregister(sock)
+        sock.close()
+    else:
+        print("Not an available option")
     # unpack the request
     # check the value of the request
     # send the appropriate response
-    response = b"Response from server"  # Example response
-    sock.send(response)  # create appropriate response for the user
-
+    # print("Sending response to client...")
+    # sock.send(response)
 
 def main():
     if len(sys.argv) != 2:
