@@ -2,6 +2,7 @@ import sys
 import socket
 import selectors
 import traceback
+import servermsg
 
 sel = selectors.DefaultSelector()
 list_of_clients = []
@@ -18,48 +19,20 @@ def accept_wrapper(sock):
     client_connection, address = sock.accept()
     print(f"Successfully connected to: {str(address)}")
     client_connection.setblocking(False)
-    sel.register(client_connection, selectors.EVENT_READ, data="hello")
     list_of_clients.append(client_connection)
+    message = servermsg.Message(sel, client_connection, address, list_of_clients)
+    sel.register(client_connection, selectors.EVENT_READ, data=message)
 
 def service_connection(key, mask):
-    sock = key.fileobj
-    if mask & selectors.EVENT_READ:
-        data = sock.recv(1024)  # Adjust buffer size as needed
-        if data:
-            handle_request(data, sock)
-        else:
-            sel.unregister(sock)
-            sock.close()
-
-def invite_player():
-    host_names = "Pick a letter from the list of host names:\n"
-    counter = 97
-    for client in list_of_clients:
-        client = str(client)
-        host_names += chr(counter) + ". " + socket.gethostbyaddr(client[110:123])[1][0] + "\n"
-        counter += 1
-    response = host_names[:len(host_names) - 1]
-    return b"%s" % response.encode()
-
-def handle_request(request=None, sock=None):
-    requestType = int.from_bytes(request, "big")
-    if requestType == 1:
-        response = invite_player()
-        print("Sending response to client...")
-        sock.send(response)
-    elif requestType == 2:
-        print("Disconnecting client from server...")
-        response = b"Exit"
-        sock.send(response)
-        sel.unregister(sock)
-        sock.close()
-    else:
-        print("Not an available option")
-    # unpack the request
-    # check the value of the request
-    # send the appropriate response
-    # print("Sending response to client...")
-    # sock.send(response)
+    message = key.data
+    try:
+        message.process_events(mask)
+    except Exception:
+        print(
+            "server error: exception for",
+            f"{message.addr}:\n{traceback.format_exc()}",
+        )
+        message.close()
 
 def main():
     if len(sys.argv) != 2:

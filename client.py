@@ -1,6 +1,7 @@
 import sys
 import socket
 import selectors
+import clientmsg
 import traceback
 import json
 
@@ -14,31 +15,25 @@ def connect_to_server(hostName, portNumber):
     clientSocket.connect_ex(address)  # connect to the server without blocking the main thread
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
     sel.register(clientSocket, events, data=None)
-    return clientSocket
+    return clientSocket, address
 
 
 def create_request(requestType):
     if requestType == 1:  # Send a invite request to the server
-        return requestType.to_bytes(1, "big")
+        return dict(
+            type="text/json",
+            encoding="utf-8",
+            content=dict(action=None, value=requestType),
+        )
     elif requestType == 2:
-        return requestType.to_bytes(1, "big")
+        return dict(
+            type="text/json",
+            encoding="utf-8",
+            content=dict(action=None, value=requestType),
+        )
     else:
         print("Invalid request type")
         return None
-    
-
-def handle_response(response, clientSocket):
-    # unpack response
-    # if repsonse is deregister value, close socket
-    # else handle other responses
-    if response == "Exit":
-        print("Disconnecting from server...")
-        clientIsConnected = False
-        clientSocket.close()
-        sys.exit(1)
-    else:
-        print(response)
-
 
 def get_user_input():
     print("1. Invite a player") # maybe list all players and ask for the player to invite
@@ -52,18 +47,25 @@ def main():
         sys.exit(1)
 
     host, port = sys.argv[1], int(sys.argv[2])
-    clientSocket = connect_to_server(host, port)
+    clientSocket, address = connect_to_server(host, port)
     clientIsConnected = True
-    print(f"[{socket.gethostname()}] successfully connected to Server") #'{socket.gethostbyaddr(host)[1][0]}'!\n")
+    print(f"[{socket.gethostname()}] successfully connected to Server")
 
     try:
-        message = create_request(int(get_user_input()))
-        clientSocket.send(message)
-        handle_response(clientSocket.recv(1024).decode(), clientSocket)
-        while clientIsConnected:  # while the client is connected to the server
-            message = input()
-            clientSocket.send(message.encode())
-            handle_response(clientSocket.recv(1024).decode(), clientSocket)
+        events = selectors.EVENT_READ | selectors.EVENT_WRITE
+        request = create_request(int(get_user_input()))
+        message = clientmsg.Message(sel, clientSocket, address, request)
+        sel.modify(clientSocket, events, data=message)
+        while True:  # while the client is connected to the server
+            events = sel.select(timeout=1)
+            for key, mask in events:
+                message = key.data
+                try:
+                    message.process_events(mask)
+                except Exception:
+                    message.close()
+            if not sel.get_map():
+                break
     except KeyboardInterrupt:
         print("Disconnecting from the server")
     finally:
