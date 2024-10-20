@@ -4,6 +4,7 @@ import selectors
 import clientmsg
 import traceback
 import json
+import logging
 
 sel = selectors.DefaultSelector()
 clientIsConnected = False
@@ -19,6 +20,9 @@ def connect_to_server(hostName, portNumber):
 
 
 def create_request(requestType):
+    logging.info(f"client.py - Creating request type {requestType}")
+    print(f"Creating request type {requestType}")
+
     if requestType == 1:  # Send a invite request to the server
         return dict(
             type="text/json",
@@ -36,6 +40,7 @@ def create_request(requestType):
         return None
 
 def get_user_input():
+    logging.info("client.py - Getting user input")
     print("1. Invite a player") # maybe list all players and ask for the player to invite
     print("2. Exit")
     user_input = input("Enter a number to select an option: ")
@@ -49,6 +54,7 @@ def main():
     host, port = sys.argv[1], int(sys.argv[2])
     clientSocket, address = connect_to_server(host, port)
     clientIsConnected = True
+    logging.info(f"[{socket.gethostname()}] successfully connected to Server")
     print(f"[{socket.gethostname()}] successfully connected to Server")
 
     try:
@@ -67,9 +73,11 @@ def main():
             if not sel.get_map():
                 break
     except KeyboardInterrupt:
+        logging.info("Caught keyboard interrupt, disconnecting from the server")
         print("Disconnecting from the server")
     finally:
         clientIsConnected = False
+        logging.info("Closing connection to the server and closing client socket")
         clientSocket.close()
 
 if __name__ == "__main__":

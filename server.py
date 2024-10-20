@@ -3,6 +3,7 @@ import socket
 import selectors
 import traceback
 import servermsg
+import logging
 
 sel = selectors.DefaultSelector()
 list_of_clients = []
@@ -17,7 +18,15 @@ def start_connections():
 
 def accept_wrapper(sock):
     client_connection, address = sock.accept()
-    print(f"Successfully connected to: {str(address)}")
+    ip_address = address[0]
+
+    try:
+        host_name = socket.gethostbyaddr(ip_address)[0]
+    except socket.herror:
+        host_name = ip_address
+
+    logging.info(f"Accepted connection from: {host_name}")
+    # print(f"Accepted connection from: {host_name}")
     client_connection.setblocking(False)
     list_of_clients.append(client_connection)
     message = servermsg.Message(sel, client_connection, address, list_of_clients)
@@ -28,10 +37,8 @@ def service_connection(key, mask):
     try:
         message.process_events(mask)
     except Exception:
-        print(
-            "server error: exception for",
-            f"{message.addr}:\n{traceback.format_exc()}",
-        )
+        logging.info(f"server error: exception for {message.addr}:\n{traceback.format_exc()}")
+        print(f"server error: exception for {message.addr}:\n{traceback.format_exc()}")
         message.close()
 
 def main():
@@ -47,6 +54,7 @@ def main():
     serverSocket.bind((host, portNumber))
     serverSocket.listen(2)  # only allow 2 clients to connect to server
     print(f"[Server] is running and listening on {(host, portNumber)}")
+    logging.info(f"[Server] is running and listening on {(host, portNumber)}")
     serverSocket.setblocking(False)
     sel.register(serverSocket, selectors.EVENT_READ, data=None)
 
@@ -54,8 +62,10 @@ def main():
         while True:  # while the server is running
             start_connections()
     except KeyboardInterrupt:
+        logging.info("Caught Keyboard Interrupt. Server is shutting down.")
         print("Server is shutting down.")
     finally:
+        logging.info("Closing server socket.")
         sel.close()
 
 if __name__ == "__main__":
