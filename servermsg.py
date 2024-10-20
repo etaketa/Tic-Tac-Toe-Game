@@ -91,7 +91,7 @@ class Message:
         counter = 97
         for client in self.list_of_clients:
             client = str(client)
-            host_names += chr(counter) + ". " + socket.gethostbyaddr(client[110:123])[1][0] + "\n"
+            host_names += chr(counter) + ". " + socket.gethostbyaddr(client[110:client.index("'",110,124)])[1][0] + "\n"
             counter += 1
         response = host_names[:len(host_names) - 1]
         return response
