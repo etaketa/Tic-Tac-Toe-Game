@@ -8,6 +8,7 @@ import logging
 sel = selectors.DefaultSelector()
 list_of_clients = []
 
+
 def start_connections():
     events = sel.select(timeout=None)
     for key, mask in events:
@@ -16,22 +17,47 @@ def start_connections():
         else:
             service_connection(key, mask)
 
+
 def accept_wrapper(sock):
     client_connection, address = sock.accept()
-    ip_address = address[0]
-
-    try:
-        host_name = socket.gethostbyaddr(ip_address)[0]
-    except socket.herror:
-        host_name = ip_address
-
-    logging.info(f"Accepted connection from: {host_name}")
-    # print(f"Accepted connection from: {host_name}")
+    logging.info(f"Accepted connection from: {address[0]}")
+    print(f"Accepted connection from: {address[0]}")
     client_connection.setblocking(False)
     list_of_clients.append(client_connection)
+
+    if len(list_of_clients) > 1:
+        notify_clients_of_new_connection(address, client_connection)
+
     message = servermsg.Message(sel, client_connection, address, list_of_clients)
     sel.register(client_connection, selectors.EVENT_READ, data=message)
 
+
+##
+# notify_clients_of_new_connection
+# @param new_client_address
+# @return none
+# Sends a notification to all clients that a new client has joined the server
+def notify_clients_of_new_connection(new_client_address, new_client_connection):
+    response = {
+            "content_bytes": self._json_encode(content, content_encoding),
+            "content_type": "text/json",
+            "content_encoding": content_encoding,
+        }
+
+    notification_message = {
+        "type": "notification",
+        "message": f"New client joined: {new_client_address}"
+    }
+    other_clients = [client for client in list_of_clients if client != new_client_connection]
+
+    # Notify existing clients about the new connection
+    for client in other_clients:
+        try:
+            client.send(json.dumps(notification_message).encode('utf-8'))
+        except Exception as e:
+            logging.error(f"Failed to send notification to client: {e}")
+
+            
 def service_connection(key, mask):
     message = key.data
     try:
@@ -40,6 +66,7 @@ def service_connection(key, mask):
         logging.info(f"server error: exception for {message.addr}:\n{traceback.format_exc()}")
         print(f"server error: exception for {message.addr}:\n{traceback.format_exc()}")
         message.close()
+
 
 def main():
     if len(sys.argv) != 2:
