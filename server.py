@@ -6,7 +6,8 @@ import servermsg
 import logging
 
 sel = selectors.DefaultSelector()
-list_of_clients = []
+dict_of_clients = {}
+
 
 def start_connections():
     events = sel.select(timeout=None)
@@ -16,21 +17,93 @@ def start_connections():
         else:
             service_connection(key, mask)
 
+
+def shutdown_server():
+    logging.info("Shutting down server.")
+    # TODO: Debug further
+    # for client in dict_of_clients.values():
+    #     try:
+    #         client.close()
+    #     except Exception as e:
+    #         logging.error(f"Failed to send shutdown message to client: {e}")
+    
+    sel.close()
+
+
 def accept_wrapper(sock):
     client_connection, address = sock.accept()
-    ip_address = address[0]
-
-    try:
-        host_name = socket.gethostbyaddr(ip_address)[0]
-    except socket.herror:
-        host_name = ip_address
-
-    logging.info(f"Accepted connection from: {host_name}")
-    # print(f"Accepted connection from: {host_name}")
+    logging.info(f"Accepted connection from: {address[0]}")
+    print(f"Accepted connection from: {address[0]}")
     client_connection.setblocking(False)
-    list_of_clients.append(client_connection)
-    message = servermsg.Message(sel, client_connection, address, list_of_clients)
+    # print(f"Client connection {client_connection}")
+    # print(f"Address {address}") 
+    dict_of_clients[address] = client_connection
+
+    if len(dict_of_clients) > 1:
+        notify_clients_of_new_connection(address)
+
+    message = servermsg.Message(sel, client_connection, address, dict_of_clients)
     sel.register(client_connection, selectors.EVENT_READ, data=message)
+
+
+# General notify clients function that sends a message to all clients
+def notify_clients(message, clientBeingAddedOrRemoved=None):
+    logging.info("[Server]: Sending notification to all clients")
+    print(f"[Server]: Sending notification to all clients")
+    other_clients = {addr: conn for addr, conn in dict_of_clients.items() if conn != clientBeingAddedOrRemoved}
+
+    for addr, client in other_clients.items():
+        try:
+            logging.info(f"[Server] Sending notification to {addr}")
+            print(f"[Server] Sending notification to {addr}")
+            message_obj = servermsg.Message(sel, client, addr, message)
+            events = selectors.EVENT_READ | selectors.EVENT_WRITE
+            sel.modify(client, events, data=message_obj)
+            service_connection(sel.get_key(client), selectors.EVENT_WRITE)
+        except Exception as e:
+            logging.error(f"Failed to send notification to client: {e}")
+
+
+# Sends a notification to all clients that a new client has joined the server
+def notify_clients_of_new_connection(new_client_address):
+    try:
+        hostname, _, _ = socket.gethostbyaddr(new_client_address[0])
+    except socket.herror:
+        hostname = new_client_address[0]  # If hostname lookup fails, use the IP address
+
+    notification_message = {
+        "type": "text/json",
+        "encoding": "utf-8",
+        "content": {
+            "action": "join",
+            "value": f"{hostname} has joined the server."
+        }
+    }
+
+    notify_clients(notification_message, clientBeingAddedOrRemoved=dict_of_clients[new_client_address])
+
+
+# Sends a notification to all clients if a client has disconnected from the server
+def notify_clients_of_disconnection(disconnected_client_address):
+    
+    try:
+        hostname, _, _ = socket.gethostbyaddr(disconnected_client_address[0])
+    except socket.herror:
+        hostname = disconnected_client_address[0]  # If hostname lookup fails, use the IP address
+
+    notification_message = {
+        "type": "text/json",
+        "encoding": "utf-8",
+        "content": {
+            "action": "disconnect",
+            "value": f"{hostname} has left the server."
+        }
+    }
+
+    
+    notify_clients(notification_message)
+    # list_of_clients.remove(disconnected_client_address)
+
 
 def service_connection(key, mask):
     message = key.data
@@ -40,6 +113,7 @@ def service_connection(key, mask):
         logging.info(f"server error: exception for {message.addr}:\n{traceback.format_exc()}")
         print(f"server error: exception for {message.addr}:\n{traceback.format_exc()}")
         message.close()
+
 
 def main():
     if len(sys.argv) != 2:
@@ -51,10 +125,13 @@ def main():
 
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
     serverSocket.bind((host, portNumber))
     serverSocket.listen(2)  # only allow 2 clients to connect to server
+
     print(f"[Server] is running and listening on {(host, portNumber)}")
     logging.info(f"[Server] is running and listening on {(host, portNumber)}")
+    
     serverSocket.setblocking(False)
     sel.register(serverSocket, selectors.EVENT_READ, data=None)
 

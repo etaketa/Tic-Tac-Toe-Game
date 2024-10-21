@@ -7,7 +7,7 @@ import socket
 import server
 
 class Message:
-    def __init__(self, selector, sock, addr, list_of_clients):
+    def __init__(self, selector, sock, addr, list_of_clients=None):
         self.selector = selector
         self.sock = sock
         self.addr = addr
