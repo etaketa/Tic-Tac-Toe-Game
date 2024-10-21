@@ -48,18 +48,20 @@ def accept_wrapper(sock):
 
 # General notify clients function that sends a message to all clients
 def notify_clients(message, clientBeingAddedOrRemoved=None):
+    logging.info("[Server]: Sending notification to all clients")
     print(f"[Server]: Sending notification to all clients")
     other_clients = {addr: conn for addr, conn in dict_of_clients.items() if conn != clientBeingAddedOrRemoved}
 
     for addr, client in other_clients.items():
         try:
-            print(f"[Server]: Sending notification to {addr}")
+            logging.info(f"[Server] Sending notification to {addr}")
+            print(f"[Server] Sending notification to {addr}")
             message_obj = servermsg.Message(sel, client, addr, message)
-            events = selectors.EVENT_WRITE
+            events = selectors.EVENT_READ | selectors.EVENT_WRITE
             sel.modify(client, events, data=message_obj)
+            service_connection(sel.get_key(client), selectors.EVENT_WRITE)
         except Exception as e:
             logging.error(f"Failed to send notification to client: {e}")
-
 
 
 # Sends a notification to all clients that a new client has joined the server
@@ -100,7 +102,7 @@ def notify_clients_of_disconnection(disconnected_client_address):
 
     
     notify_clients(notification_message)
-    list_of_clients.remove(disconnected_client_address)
+    # list_of_clients.remove(disconnected_client_address)
 
 
 def service_connection(key, mask):

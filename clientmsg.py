@@ -80,6 +80,7 @@ class Message:
         return message
 
     def _process_response_json_content(self):
+        print("clientmsg.py - Processing response JSON content")
         content = self.response
         result = content.get("result")
         print(result)

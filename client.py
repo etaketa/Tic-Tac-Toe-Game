@@ -98,6 +98,7 @@ def main():
         request = create_request(int(get_user_input()))
         message = clientmsg.Message(sel, clientSocket, address, request)
         sel.modify(clientSocket, events, data=message)
+        
         while CLIENT_IS_CONNECTED:  # while the client is connected to the server
             events = sel.select(timeout=1)
             for key, mask in events:
