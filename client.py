@@ -5,7 +5,11 @@ import logging
 import threading
 import clientmsg
 
+
 sel = selectors.DefaultSelector()
+
+
+CLIENT_IS_CONNECTED = False
 
 
 def create_request(requestType):
@@ -38,7 +42,7 @@ def get_user_input():
 
 
 # This is a function handled in a seperate thread
-def handle_server_communication(clientSocket):
+def handle_server_communication(clientSocket, address):
     try:
         while True:
             events = sel.select(timeout=1)
@@ -60,7 +64,7 @@ def handle_server_communication(clientSocket):
 
 # This is a function handled in a seperate thread
 def handle_user_input(clientSocket, address):
-    while True:
+    while CLIENT_IS_CONNECTED:
         user_input = get_user_input()
         request = create_request(int(user_input))
 
@@ -86,16 +90,40 @@ def main():
     host, port = sys.argv[1], int(sys.argv[2])
     clientSocket, address = connect_to_server(host, port)
     logging.info(f"[{socket.gethostname()}] successfully connected to Server")
+    CLIENT_IS_CONNECTED = True
     print(f"[{socket.gethostname()}] successfully connected to Server")
 
-    # Start threads for server communication and user input
-    server_thread = threading.Thread(target=handle_server_communication, args=(clientSocket,))
-    user_input_thread = threading.Thread(target=handle_user_input, args=(clientSocket, address))
+    try:
+        events = selectors.EVENT_READ | selectors.EVENT_WRITE
+        request = create_request(int(get_user_input()))
+        message = clientmsg.Message(sel, clientSocket, address, request)
+        sel.modify(clientSocket, events, data=message)
+        while CLIENT_IS_CONNECTED:  # while the client is connected to the server
+            events = sel.select(timeout=1)
+            for key, mask in events:
+                message = key.data
+                try:
+                    message.process_events(mask)
+                except Exception:
+                    message.close()
+            if not sel.get_map():
+                break
+    except KeyboardInterrupt:
+        logging.info("Caught keyboard interrupt, disconnecting from the server")
+        print("Disconnecting from the server")
+    finally:
+        logging.info("Closing connection to the server and closing client socket")
+        CLIENT_IS_CONNECTED = False
+        clientSocket.close()
 
-    server_thread.start()
+    # Start threads for server communication and user input
+    # server_thread = threading.Thread(target=handle_server_communication, args=(clientSocket, address))
+    user_input_thread = threading.Thread(target=handle_user_input, args=(clientSocket, address), daemon=True)  # Takes it its own clientSocket and address (IP, port), daemon=True means when the main thread stops executing so does this thread
+
+    #server_thread.start()
     user_input_thread.start()
 
-    server_thread.join()
+    #server_thread.join()
     user_input_thread.join()
 
 if __name__ == "__main__":
