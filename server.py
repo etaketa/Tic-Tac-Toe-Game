@@ -7,6 +7,7 @@ import logging
 
 sel = selectors.DefaultSelector()
 dict_of_clients = {}
+list_of_clients = []
 
 
 def start_connections():
@@ -38,11 +39,12 @@ def accept_wrapper(sock):
     # print(f"Client connection {client_connection}")
     # print(f"Address {address}") 
     dict_of_clients[address] = client_connection
+    list_of_clients.append(client_connection)
 
     if len(dict_of_clients) > 1:
         notify_clients_of_new_connection(address)
 
-    message = servermsg.Message(sel, client_connection, address, dict_of_clients)
+    message = servermsg.Message(sel, client_connection, address, dict_of_clients, list_of_clients)
     sel.register(client_connection, selectors.EVENT_READ, data=message)
 
 
@@ -56,7 +58,7 @@ def notify_clients(message, clientBeingAddedOrRemoved=None):
         try:
             logging.info(f"[Server] Sending notification to {addr}")
             print(f"[Server] Sending notification to {addr}")
-            message_obj = servermsg.Message(sel, client, addr, message)
+            message_obj = servermsg.Message(sel, client, addr, message, list_of_clients)
             events = selectors.EVENT_READ | selectors.EVENT_WRITE
             sel.modify(client, events, data=message_obj)
             service_connection(sel.get_key(client), selectors.EVENT_WRITE)
