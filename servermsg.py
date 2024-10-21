@@ -7,7 +7,7 @@ import socket
 import server
 
 class Message:
-    def __init__(self, selector, sock, addr, list_of_clients=None):
+    def __init__(self, selector, sock, addr, dict_of_clients, list_of_clients):
         self.selector = selector
         self.sock = sock
         self.addr = addr
@@ -17,6 +17,7 @@ class Message:
         self.jsonheader = None
         self.request = None
         self.response_created = False
+        self.dict_of_clients = dict_of_clients
         self.list_of_clients = list_of_clients
 
     def _set_selector_events_mask(self, mode):
