@@ -5,8 +5,11 @@ Two clients will connect to a server that conducts a game of Tic Tac Toe using P
 **How to play:**
 1. **Start the server:** Run the `server.py` script by typing the command: `python3 server.py <port>`
 2. **Connect clients:** Run the `client.py` script on two different machines or terminals by typing the command: `python3 client.py <serverIP> <port>`
-- Each client gets the option to exit or invite a player
-- Once a player is invited from a list of available players, the game will start
+- Once a player connects to the server, they can input a username
+- Once 2 clients are connected and inserted their username, the game will start
+- The first person to connect will always go first with their symbol being the 'X'
+- Choose from the letters a-i to pick where you want your symbol to go
+- Board will update with and replace the letter you chose with their symbol
 3. **Play the game:** Players take turns entering their moves by typing in the coordinates that correspond to the box they want to fill in with their symbol (X or O). The first player to get three in a row in any direction wins!
 
 **Technologies used:**
