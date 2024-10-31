@@ -1,10 +1,8 @@
 import sys
 import socket
 import selectors
-import traceback
-import json
-import server
 import threading
+import logging
 
 sel = selectors.DefaultSelector()
 clientIsConnected = False
@@ -20,9 +18,11 @@ def connect_to_server(hostName, portNumber):
 
 def create_request(requestType, username):
     if username or dataIsValid(requestType):
+        logging.info(f"client.py - Valid request has been made")
         request = requestType
         return b"%s" % request.encode()
     else:
+        logging.info(f"client.py - Unexpected request has been made")
         print("Invalid request type")
         return None
 
@@ -60,6 +60,7 @@ def main():
     clientSocket = connect_to_server(host, port)
     clientIsConnected = True
     address = 1
+    logging.info(f"client.py - {socket.gethostname()} successfully connected to the server")
     print(f"[{socket.gethostname()}] successfully connected to Server")
 
     user_input_thread = threading.Thread(target=handle_server_communication, args=(clientSocket, address), daemon=True)
