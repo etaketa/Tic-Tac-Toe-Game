@@ -20,3 +20,13 @@ Two clients will connect to a server that conducts a game of Tic Tac Toe using P
 * [Socket Programming in Python](https://realpython.com/python-sockets/)
 * Homework 1 - Intro to TCP Sockets
 * Homework 2 - Multiple TCP Connections
+
+## Sprints
+## Sprint 1
+Implement a TCP server and TCP client
+
+## Sprint 2 - Design and Implement Message Protocol
+Implement a message protocol using libserver.py and custom requests on the client level
+
+## Sprint 3 - Multi-player functionality, Synchronize state across clients.
+Add multiplayer functionality
