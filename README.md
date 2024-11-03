@@ -24,9 +24,21 @@ Two clients will connect to a server that conducts a game of Tic Tac Toe using P
 ## Sprints
 ## Sprint 1
 Implement a TCP server and TCP client
+- Develop a server for the different clients to connect to
+- Allow at least 2 clients to connect to the server and send messages back and forth to each other
+- Log connections and states for the server and client
+- Allow server to run on specific ports from input
 
 ## Sprint 2 - Design and Implement Message Protocol
 Implement a message protocol using libserver.py and custom requests on the client level
+- Implement a protocol for how clients will send messages to each other
+- Handle different commands within the server
+- Include a format for clients to use
 
 ## Sprint 3 - Multi-player functionality, Synchronize state across clients.
 Add multiplayer functionality
+- Allow players to choose either own username at the beginning of the game
+- Synchronize the game state across the 2 clients
+- Update game board with player moves
+- Allow server to handle client disconnections
+- Implement turn information
